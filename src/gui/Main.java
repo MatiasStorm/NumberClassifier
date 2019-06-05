@@ -39,7 +39,6 @@ public class Main extends Application{
 	private int width = 600;
 	private int height = 300;
 	private int imgSize = 28;
-	private String fileName = "data/mnist_train.CSV";
 	private Canvas canvas;
 	private GraphicsContext gc;
 	BorderPane rootPane = new BorderPane();

@@ -1,0 +1,21 @@
+.root{
+    -fx-background-color: #D3D3D3;
+    -fx-padding: 10;
+    -fx-font-size: 16px;
+}
+
+.button{
+    -fx-font-size: 16px
+}
+
+.guess-text{
+    -fx-font-size: 50px;
+    -fx-font-weight: bold;
+    -fx-underline: true;
+    -fx-alignment: LEFT;
+}
+
+.percentage-text{
+    -fx-font-size: 14px;
+}
+

@@ -194,26 +194,3 @@ public class Main extends Application{
 
 
 
-
-
-
-
-
-
-
-
-
-// Draw Images:
-//PixelWriter pw = gc.getPixelWriter();
-//for(int i = 0; i < pixelValues.size(); i++) {
-//	List<Double> row = pixelValues.get(i);
-//	for(int j = 1; j < row.size(); j++) {
-//		int x = (j - 1) % 28 + (i % 10 * 28);
-//		int y = (int) (Math.floorDiv(j, 28) + Math.floorDiv(i, 10) * 28);
-//		pw.setColor(x, y, Color.color(0, 0, 0, row.get(j)/255));
-//	}
-//}
-
-
-
-

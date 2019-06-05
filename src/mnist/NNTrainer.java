@@ -127,14 +127,14 @@ public class NNTrainer {
 	static MNISTLoader trainLoader = new MNISTLoader();
 	static MNISTLoader testLoader = new MNISTLoader();
 	private static void loadData() {
-		String trainFileName = "data/mnist_train.csv";
-		int nTrainImages = 1000;
+		String trainFileName = "mnist/mnist_train.csv";
+		int nTrainImages = 1000; // Max 60000
 		trainLoader.loadCSV(trainFileName, nTrainImages);
 		trainLoader.initNormalizedInputs();
 		trainLoader.initTargets();		
 		
-		String testFileName = "data/mnist_test.csv";
-		int nTestImages = 500;
+		String testFileName = "mnist/mnist_test.csv";
+		int nTestImages = 500; // Max 10000
 		testLoader.loadCSV(testFileName, nTestImages);
 		testLoader.initNormalizedInputs();
 		testLoader.initTargets();
@@ -173,41 +173,13 @@ public class NNTrainer {
 		for(int i = 0; i < inputs.size(); i++) {
 			int guess = maxIndex( nn.feedForward2(inputs.get(i)) );
 			int target = maxIndex( targets.get(i) );
-			
-//			if(i < 10) {
-//				System.out.println(inputs.get(i).get(521, 0));
-//				System.out.println(guess + " " + target);
-//			}
-			
 			if(guess == target) {
 				correct ++;
 			}
 		}
 		return (correct / targets.size() * 100.0);
-//		System.out.println("Correctely guessed: " + (correct / targets.size() * 100.0) + "%");
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

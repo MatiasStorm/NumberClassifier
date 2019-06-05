@@ -11,11 +11,8 @@ import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 
 public class MNISTLoader {
-	public static void main(String[] args) {
-	}
 	
 	private List<List<Double>> data = new ArrayList<>();
-	
 	public List<List<Double>> loadCSV(String fileName, int numberOfImages) {
 		if (data.size() > 0) data = new ArrayList<>();			
 		try {
@@ -30,7 +27,6 @@ public class MNISTLoader {
 				i++;
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return data;
@@ -56,8 +52,7 @@ public class MNISTLoader {
 		for(List<Double> row: data) {
 			matrix = new DenseDoubleMatrix2D(28 * 28, 1);
 			for(int i = 1; i < row.size(); i++) {
-//				matrix.set(i-1, 0, row.get(i) / 255.0);
-				matrix.set(i-1, 0, row.get(i) > 75 ? 1 : 0);
+				matrix.set(i-1, 0, row.get(i) / 255.0);
 			}
 			normalizedInputs.add(matrix.copy());
 		}
@@ -87,28 +82,6 @@ public class MNISTLoader {
 	}
 	
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -33,7 +33,6 @@ public class NeuralNetwork {
 	};
 	private static DRand randomEngine = new DRand(1);
 	private static DoubleFunction random = new DoubleFunction() {
-//		public double apply(double x) {return Uniform.staticNextDoubleFromTo(-1, 1);}
 		public double apply(double x) {return randomEngine.nextDouble() - 0.5;}
 	};
 	
@@ -122,7 +121,6 @@ public class NeuralNetwork {
 			
 			writer.close();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -278,35 +276,8 @@ public class NeuralNetwork {
 			
 			dWeights = algebra.mult(dBias, algebra.transpose(preInput.copy())); // Multiplying dBias with the input to the get gradient of the weights of the layer.
 			(hiddenWeights.get(i)).assign(dWeights, Functions.plus); // Update hidden weights							
-		}
-		
-	}
-	
-	
-	
-//	// Back propagation:
-//	// Errors
-//	outputError = target.copy();
-//	outputError.assign(output, Functions.minus);
-//	hiddenError = algebra.mult(algebra.transpose(weightsHO).copy(), outputError);
-//	// Hidden -> output
-//	DoubleMatrix2D dOutput = output.assign(dActivate).copy();
-//	dWeightsHO = dOutput.assign(outputError, Functions.mult);
-//	dWeightsHO.assign(Functions.mult(alfa));
-//	biasO.assign(dWeightsHO, Functions.plus); // Update output bias
-//	dWeightsHO = algebra.mult(dWeightsHO, algebra.transpose(hidden).copy());
-//	weightsHO.assign(dWeightsHO, Functions.plus); // update output weights
-//	
-//	// Input -> Hidden
-//	DoubleMatrix2D dHidden = hidden.assign(dActivate).copy();
-//	DoubleMatrix2D dWeightsIH = dHidden.assign(hiddenError, Functions.mult);
-//	dWeightsIH.assign(Functions.mult(alfa));
-//	biasH.assign(dWeightsIH, Functions.plus); // Update hidden Bias
-//	dWeightsIH = algebra.mult(dWeightsIH, algebra.transpose(input.copy()));
-//	weightsIH.assign(dWeightsIH, Functions.plus); // Update hidden weights
-	
-	
-	
+		}	
+	}	
 }
 
 

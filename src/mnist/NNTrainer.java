@@ -92,9 +92,10 @@ public class NNTrainer {
 //						 {200, 190},
 //						 {210, 180},
 //						 {220, 200}};
-		int[][] forms = {{397},
-						 {210, 210}};
-		testNeuralNetworks(forms);
+		int[][] forms = {{10, 10}};
+		int[] f = {1, 2, 3};
+		System.out.println(Arrays.toString(f));
+//		testNeuralNetworks(forms);
 		
 		
 	}

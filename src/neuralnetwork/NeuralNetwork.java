@@ -107,7 +107,6 @@ public class NeuralNetwork {
 	}
 	
 	public void saveData(String fileName) {
-		System.out.println(weightsIH.toString());
 		try {
 			PrintWriter writer = new PrintWriter(fileName);
 			writer.println(nInputNodes);
@@ -187,15 +186,19 @@ public class NeuralNetwork {
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public List<DoubleMatrix2D> hiddenWeights = new ArrayList<>();
 	public List<DoubleMatrix2D> hiddenBiases = new ArrayList<>();
+	int[] hiddenLayers;
+	int nHiddenLayers;
 	public DoubleMatrix2D outputWeights, outputBias;
-	public NeuralNetwork(int _nInputNodes, int[] hiddenLayers, int _nOutputNodes, double _alfa) {
+	public NeuralNetwork(int _nInputNodes, int[] _hiddenLayers, int _nOutputNodes, double _alfa) {
 		alfa = _alfa;
 		nInputNodes = _nInputNodes;
 		nOutputNodes = _nOutputNodes;
+		hiddenLayers = _hiddenLayers;
+		nHiddenLayers = hiddenLayers.length;
 		
 		DoubleMatrix2D weights;
 		DoubleMatrix2D bias;
-		for(int i = 0; i < hiddenLayers.length; i++) {
+		for(int i = 0; i < nHiddenLayers; i++) {
 			int nodes = hiddenLayers[i];
 			if(i == 0) {
 				weights = factory.make(nodes, nInputNodes);
@@ -209,7 +212,7 @@ public class NeuralNetwork {
 			hiddenWeights.add(weights);
 			hiddenBiases.add(bias);
 		}
-		outputWeights = factory.make(nOutputNodes, hiddenLayers[hiddenLayers.length - 1]);
+		outputWeights = factory.make(nOutputNodes, hiddenLayers[nHiddenLayers - 1]);
 		outputWeights.assign(random);
 		outputBias = factory.make(nOutputNodes, 1);
 		outputBias.assign(random);
@@ -218,7 +221,7 @@ public class NeuralNetwork {
 	public DoubleMatrix2D feedForward2(DoubleMatrix2D input) {
 		DoubleMatrix2D guess = input.copy();
 		
-		for(int i = 0; i < hiddenWeights.size(); i++) {
+		for(int i = 0; i < nHiddenLayers; i++) {
 			guess = algebra.mult(hiddenWeights.get(i), guess);
 			guess.assign(hiddenBiases.get(i), Functions.plus);
 			guess.assign(activate);
@@ -235,7 +238,7 @@ public class NeuralNetwork {
 		DoubleMatrix2D hiddenGuess = input.copy();
 		List<DoubleMatrix2D> hiddenGuesses = new ArrayList<>();
 		
-		for(int i = 0; i < hiddenWeights.size(); i++) {
+		for(int i = 0; i < nHiddenLayers; i++) {
 			hiddenGuess = algebra.mult(hiddenWeights.get(i), hiddenGuess);
 			hiddenGuess.assign(hiddenBiases.get(i), Functions.plus);
 			hiddenGuess.assign(activate);
@@ -247,7 +250,6 @@ public class NeuralNetwork {
 		
 		
 		///// Back propagation: /////
-		
 		DoubleMatrix2D outputError = target.copy();
 		outputError.assign(outputGuess, Functions.minus);
 		
@@ -261,7 +263,7 @@ public class NeuralNetwork {
 		
 		// Hidden layers:
 		DoubleMatrix2D hiddenError, preInput, dBias, dWeights, nextWeights;
-		for(int i = hiddenGuesses.size() - 1; i >= 0; i--) {
+		for(int i = nHiddenLayers - 1; i >= 0; i--) {
 			nextWeights = i == hiddenGuesses.size() - 1 ? outputWeights : hiddenWeights.get(i + 1); // The weights of the layer after the current layer.
 			hiddenError = algebra.mult(algebra.transpose(nextWeights).copy(), outputError); // The error of the layer, output error is the error of the output.
 			

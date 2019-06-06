@@ -18,13 +18,7 @@ import cern.jet.random.Uniform;
 import cern.jet.random.engine.DRand;
 
 public class NeuralNetwork {
-	private int nInputNodes, nHiddenNodes, nOutputNodes;
-	private double alfa;
-	private static final DoubleFactory2D factory = DoubleFactory2D.dense;
-	private static final Algebra algebra = new Algebra();
-	public DoubleMatrix2D weightsIH, weightsHO, biasH, biasO;
-	
-	// Simple Matrix functions:
+	// Matrix functions:
 	private static DoubleFunction activate = new DoubleFunction() {
 		public double apply(double x) {return 1 / (1 + Math.exp(-x));}
 	};
@@ -36,29 +30,93 @@ public class NeuralNetwork {
 		public double apply(double x) {return randomEngine.nextDouble() - 0.5;}
 	};
 	
-	private void initializeMatrixes() {
-		weightsIH = factory.make(nHiddenNodes, nInputNodes);
-		weightsHO = factory.make(nOutputNodes, nHiddenNodes);
-		biasH = factory.make(nHiddenNodes, 1);
-		biasO = factory.make(nOutputNodes, 1);
-	}
 	
-	private void randomizeMatrixes() {
-		weightsIH.assign(random);
-		weightsHO.assign(random);
-		biasH.assign(random);
-		biasO.assign(random);
-	}
-	
-	public NeuralNetwork(int _nInputNodes, int _nHiddenNodes, int _nOutputNodes, double _alfa) {
+	private static final DoubleFactory2D factory = DoubleFactory2D.dense;
+	public DoubleMatrix2D outputWeights, outputBias;
+	private int nInputNodes, nOutputNodes, nHiddenLayers;
+	public List<DoubleMatrix2D> hiddenWeights = new ArrayList<>();
+	public List<DoubleMatrix2D> hiddenBiases = new ArrayList<>();
+	List<Integer> hiddenLayers;
+	private static final Algebra algebra = new Algebra();
+	private double alfa;
+	public NeuralNetwork(int _nInputNodes, Integer[] _hiddenLayers, int _nOutputNodes, double _alfa) {
 		alfa = _alfa;
 		nInputNodes = _nInputNodes;
-		nHiddenNodes = _nHiddenNodes;
 		nOutputNodes = _nOutputNodes;
-		initializeMatrixes();
-		randomizeMatrixes();
-	}
 		
+		hiddenLayers = Arrays.asList(_hiddenLayers);
+		nHiddenLayers = hiddenLayers.size();
+		
+		DoubleMatrix2D weights;
+		DoubleMatrix2D bias;
+		for(int i = 0; i < nHiddenLayers; i++) {
+			int nodes = hiddenLayers.get(i);
+			if(i == 0) {
+				weights = factory.make(nodes, nInputNodes);
+				bias = factory.make(nodes, 1);
+			} else{
+				weights = factory.make(nodes, hiddenLayers.get(i - 1));
+				bias = factory.make(nodes, 1);
+			}
+			weights.assign(random);
+			bias.assign(random);
+			hiddenWeights.add(weights);
+			hiddenBiases.add(bias);
+		}
+		outputWeights = factory.make(nOutputNodes, hiddenLayers.get(nHiddenLayers - 1));
+		outputWeights.assign(random);
+		outputBias = factory.make(nOutputNodes, 1);
+		outputBias.assign(random);
+	}
+	
+	
+	public NeuralNetwork(String fileName, double _alfa) {
+		try {
+			alfa = _alfa;
+			BufferedReader reader = new BufferedReader(new FileReader(fileName));
+			nInputNodes = Integer.parseInt(reader.readLine());
+			
+			hiddenLayers = new ArrayList<>();
+			for(String number : reader.readLine().split(" ")) {
+				hiddenLayers.add(Integer.parseInt(number));
+			}
+			nHiddenLayers = hiddenLayers.size();
+			nOutputNodes = Integer.parseInt(reader.readLine());
+			
+			initializeMatrixes();
+			
+			for(int j = 0; j < nHiddenLayers; j++) {
+				readMatrixFromFile(hiddenWeights.get(j), reader);
+				readMatrixFromFile(hiddenBiases.get(j), reader);
+			}
+			readMatrixFromFile(outputWeights, reader);
+			readMatrixFromFile(outputBias, reader);
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	private void initializeMatrixes() {		
+		DoubleMatrix2D weights, bias;
+		for(int i = 0; i < nHiddenLayers; i++) {
+			int nodes = hiddenLayers.get(i);
+			if(i == 0) {
+				weights = factory.make(nodes, nInputNodes);
+				bias = factory.make(nodes, 1);
+			} else{
+				weights = factory.make(nodes, hiddenLayers.get(i - 1));
+				bias = factory.make(nodes, 1);
+			}
+			hiddenWeights.add(weights);
+			hiddenBiases.add(bias);
+		}
+		
+		outputWeights = factory.make(nOutputNodes, hiddenLayers.get(nHiddenLayers - 1));
+		outputBias = factory.make(nOutputNodes, 1);
+	}
+	
 	
 	private void readMatrixFromFile(DoubleMatrix2D matrix, BufferedReader reader) {
 		String line;
@@ -78,23 +136,7 @@ public class NeuralNetwork {
 			e.printStackTrace();
 		}
 	}
-	
-	public NeuralNetwork(String fileName) {
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(fileName));
-			nInputNodes = Integer.parseInt(reader.readLine());
-			nHiddenNodes = Integer.parseInt(reader.readLine());
-			nOutputNodes = Integer.parseInt(reader.readLine());
-			initializeMatrixes();
-			readMatrixFromFile(weightsIH, reader);
-			readMatrixFromFile(weightsHO, reader);
-			readMatrixFromFile(biasH, reader);
-			readMatrixFromFile(biasO, reader);
-			reader.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
+
 	
 	private void writeMatrixToFile(DoubleMatrix2D matrix, PrintWriter writer) {
 		writer.print(matrix.rows() + " " + matrix.columns() + " ");
@@ -106,17 +148,24 @@ public class NeuralNetwork {
 		writer.println();
 	}
 	
+	
 	public void saveData(String fileName) {
 		try {
 			PrintWriter writer = new PrintWriter(fileName);
 			writer.println(nInputNodes);
-			writer.println(nHiddenNodes);
+			for(int i = 0; i < nHiddenLayers; i++) {
+				writer.print(hiddenLayers.get(i) + " ");				
+			}
+			writer.println();
 			writer.println(nOutputNodes);
 			
-			writeMatrixToFile(weightsIH, writer);
-			writeMatrixToFile(weightsHO, writer);
-			writeMatrixToFile(biasH, writer);
-			writeMatrixToFile(biasO, writer);
+			// Writing matrixes to file:
+			for(int i = 0; i < nHiddenLayers; i++) {
+				writeMatrixToFile(hiddenWeights.get(i), writer);
+				writeMatrixToFile(hiddenBiases.get(i), writer);
+			}
+			writeMatrixToFile(outputWeights, writer);
+			writeMatrixToFile(outputBias, writer);
 			
 			writer.close();
 		} catch (FileNotFoundException e) {
@@ -124,101 +173,8 @@ public class NeuralNetwork {
 		}
 	}
 	
+	
 	public DoubleMatrix2D feedForward(DoubleMatrix2D input) {
-		DoubleMatrix2D hidden, output;
-		// Hidden layer
-		hidden = algebra.mult(weightsIH, input);
-		hidden.assign(biasH, Functions.plus);
-		hidden.assign(activate);
-		
-		// Output layer
-		output = algebra.mult(weightsHO, hidden);
-		output.assign(biasO, Functions.plus);
-		output.assign(activate);		
-		return output;
-	}
-	
-	public void train(DoubleMatrix2D input, DoubleMatrix2D target) {
-		DoubleMatrix2D hidden, output, outputError, hiddenError, dWeightsHO;
-		// Feed forward:
-		// Hidden layer
-		hidden = algebra.mult(weightsIH, input);
-		hidden.assign(biasH, Functions.plus);
-		hidden.assign(activate);
-		// Output layer
-		output = algebra.mult(weightsHO, hidden);
-		output.assign(biasO, Functions.plus);
-		output.assign(activate);
-		
-		// Back propagation:
-		// Errors
-		outputError = target.copy();
-		outputError.assign(output, Functions.minus);
-		hiddenError = algebra.mult(algebra.transpose(weightsHO).copy(), outputError);
-		// Hidden -> output
-		DoubleMatrix2D dOutput = output.assign(dActivate).copy();
-		dWeightsHO = dOutput.assign(outputError, Functions.mult);
-		dWeightsHO.assign(Functions.mult(alfa));
-		biasO.assign(dWeightsHO, Functions.plus); // Update output bias
-		dWeightsHO = algebra.mult(dWeightsHO, algebra.transpose(hidden).copy());
-		weightsHO.assign(dWeightsHO, Functions.plus); // update output weights
-		
-		// Input -> Hidden
-		DoubleMatrix2D dHidden = hidden.assign(dActivate).copy();
-		DoubleMatrix2D dWeightsIH = dHidden.assign(hiddenError, Functions.mult);
-		dWeightsIH.assign(Functions.mult(alfa));
-		biasH.assign(dWeightsIH, Functions.plus); // Update hidden Bias
-		dWeightsIH = algebra.mult(dWeightsIH, algebra.transpose(input.copy()));
-		weightsIH.assign(dWeightsIH, Functions.plus); // Update hidden weights
-	}
-	
-	public void trainBatch(DoubleMatrix2D[] inputs, DoubleMatrix2D[] targets, int batchSize) {
-		
-		
-	}
-	
-	
-	
-	
-	
-	
-	
-	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	public List<DoubleMatrix2D> hiddenWeights = new ArrayList<>();
-	public List<DoubleMatrix2D> hiddenBiases = new ArrayList<>();
-	int[] hiddenLayers;
-	int nHiddenLayers;
-	public DoubleMatrix2D outputWeights, outputBias;
-	public NeuralNetwork(int _nInputNodes, int[] _hiddenLayers, int _nOutputNodes, double _alfa) {
-		alfa = _alfa;
-		nInputNodes = _nInputNodes;
-		nOutputNodes = _nOutputNodes;
-		hiddenLayers = _hiddenLayers;
-		nHiddenLayers = hiddenLayers.length;
-		
-		DoubleMatrix2D weights;
-		DoubleMatrix2D bias;
-		for(int i = 0; i < nHiddenLayers; i++) {
-			int nodes = hiddenLayers[i];
-			if(i == 0) {
-				weights = factory.make(nodes, nInputNodes);
-				bias = factory.make(nodes, 1);
-			} else{
-				weights = factory.make(nodes, hiddenLayers[i - 1]);
-				bias = factory.make(nodes, 1);
-			}
-			weights.assign(random);
-			bias.assign(random);
-			hiddenWeights.add(weights);
-			hiddenBiases.add(bias);
-		}
-		outputWeights = factory.make(nOutputNodes, hiddenLayers[nHiddenLayers - 1]);
-		outputWeights.assign(random);
-		outputBias = factory.make(nOutputNodes, 1);
-		outputBias.assign(random);
-	}
-	
-	public DoubleMatrix2D feedForward2(DoubleMatrix2D input) {
 		DoubleMatrix2D guess = input.copy();
 		
 		for(int i = 0; i < nHiddenLayers; i++) {
@@ -233,7 +189,8 @@ public class NeuralNetwork {
 		return guess;
 	}
 	
-	public void train2(DoubleMatrix2D input, DoubleMatrix2D target) {
+	
+	public void train(DoubleMatrix2D input, DoubleMatrix2D target) {
 		// Feed forward:
 		DoubleMatrix2D hiddenGuess = input.copy();
 		List<DoubleMatrix2D> hiddenGuesses = new ArrayList<>();
@@ -275,11 +232,18 @@ public class NeuralNetwork {
 			dBias.assign(hiddenError, Functions.mult); // Multiplying the error with the guess made by the layer
 			dBias.assign(Functions.mult(alfa)); // Multiplying with the learning rate
 			(hiddenBiases.get(i)).assign(dBias, Functions.plus); // Update hidden Bias
-			
 			dWeights = algebra.mult(dBias, algebra.transpose(preInput.copy())); // Multiplying dBias with the input to the get gradient of the weights of the layer.
 			(hiddenWeights.get(i)).assign(dWeights, Functions.plus); // Update hidden weights							
 		}	
-	}	
+	}
+	
+	
+	public void trainBatch(DoubleMatrix2D[] inputs, DoubleMatrix2D[] targets, int batchSize) {
+		
+		
+	}
+	
+	
 }
 
 

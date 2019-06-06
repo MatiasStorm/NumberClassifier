@@ -44,11 +44,9 @@ public class Main extends Application{
 	BorderPane rootPane = new BorderPane();
 	NeuralNetwork nn;
 	public void start(Stage primaryStage) {
-//		String weightsFile = "NNweights_mnist_0_1.txt";
-		String weightsFile = "data/NNweights_mnist_hidden250.txt";
-//		String weightsFile = "NNweights_mnist.txt";
+		String weightsFile = "data/NNweights_mnist_210_210.txt";
 		
-		nn = new NeuralNetwork(weightsFile);
+		nn = new NeuralNetwork(weightsFile, 0.1);
 		
 		Scene scene = new Scene(rootPane, width, height);
 		scene.getStylesheets().add("gui/styleSheet.css");
@@ -129,7 +127,7 @@ public class Main extends Application{
 		gc.setStroke(Color.BLACK);
 		gc.setFill(Color.WHITE);
 		gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
-		gc.setLineWidth(30);
+		gc.setLineWidth(28);
 		canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, new EventHandler<MouseEvent>() {
 			@Override
 			public void handle(MouseEvent event) {

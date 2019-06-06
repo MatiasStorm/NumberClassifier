@@ -1,5 +1,6 @@
 package mnist;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -11,110 +12,28 @@ import cern.jet.math.Functions;
 public class NNTrainer {
 	static NeuralNetwork nn;
 	public static void main(String[] args) {
-		loadData();
+		loadData(5000, 1000);
 		int nInputNodes = 28 * 28;
-//		int nInputNodes = 2;
-//		int nHiddenNodes = 2;
 		int nOutputNodes = 10;
-		double alfa = 0.1;
-//		nn = new NeuralNetwork(nInputNodes, nHiddenNodes, nOutputNodes, alfa);
-//		DoubleMatrix2D[] inputs = {new DenseDoubleMatrix2D(new double[][] {{1}, {1}}),
-//								   new DenseDoubleMatrix2D(new double[][] {{0}, {0}}),
-//								   new DenseDoubleMatrix2D(new double[][] {{0}, {1}}),
-//								   new DenseDoubleMatrix2D(new double[][] {{1}, {0}})};
-//		DoubleMatrix2D[] targets = {new DenseDoubleMatrix2D(new double[][] {{0}}),
-//									new DenseDoubleMatrix2D(new double[][] {{0}}),
-//									new DenseDoubleMatrix2D(new double[][] {{1}}),
-//									new DenseDoubleMatrix2D(new double[][] {{1}})};
-//		System.out.println(nn.hiddenWeights);
-//		for(int i = 0; i < 10000; i++) {
-//			for(int j = 0; j < 4; j++) {
-//				nn.train(inputs[j], targets[j]);
-//			}
-//		}
-//		System.out.println(nn.hiddenWeights);
-//		System.out.println(nn.hiddenBiases);
-//		System.out.println(nn.outputWeights);
-//		System.out.println(nn.outputBias);
-//		
-//		for(int i = 0; i < 4; i++) {
-//			System.out.println(nn.feedForward(inputs[i]));
-//		}
-		
-		
-		
-//		nn = new NeuralNetwork(nInputNodes, new int[] {200}, nOutputNodes, alfa);
-//		DoubleMatrix2D[] inputs = {new DenseDoubleMatrix2D(new double[][] {{1}, {1}}),
-//								   new DenseDoubleMatrix2D(new double[][] {{0}, {0}}),
-//								   new DenseDoubleMatrix2D(new double[][] {{0}, {1}}),
-//								   new DenseDoubleMatrix2D(new double[][] {{1}, {0}})};
-//		DoubleMatrix2D[] targets = {new DenseDoubleMatrix2D(new double[][] {{0}}),
-//									new DenseDoubleMatrix2D(new double[][] {{0}}),
-//									new DenseDoubleMatrix2D(new double[][] {{1}}),
-//									new DenseDoubleMatrix2D(new double[][] {{1}})};
-//		System.out.println(nn.weightsIH);
-//		for(int i = 0; i < 10000; i++) {
-//			for(int j = 0; j < 4; j++) {
-//				nn.train2(inputs[j], targets[j]);
-//			}
-//		}
-//		System.out.println(nn.weightsIH);
-//		System.out.println(nn.biasH);
-//		System.out.println(nn.weightsHO);
-//		System.out.println(nn.biasO);
-//		
-//		
-//		for(int i = 0; i < 4; i++) {
-//			System.out.println(nn.feedForward2(inputs[i]));
-//		}
-		
-		
-//		test();
-//		int epochs = 5;
-//		double end = 0;
-//		double start = System.currentTimeMillis();
-//		for(int i = 1; i <= epochs; i++) {
-//			train();	
-//			end = System.currentTimeMillis();
-//			System.out.println("Epoch: " + i + "/" + epochs +". Time: " + (end - start)/1000 + " seconds.");
-//			start = System.currentTimeMillis();
-//			test();
-//		}
-		
-//		nn.saveData("NNweights_mnist_hidden250.txt");
-		
-		
-//		int[][] forms = {{180, 180},
-//						 {200, 200},
-//						 {210, 210}, //[210, 210]: 89.0%, 10. Epoch, Best one!
-//						 {220, 220},
-//						 {180, 150},
-//						 {200, 190},
-//						 {210, 180},
-//						 {220, 200}};
-		int[][] forms = {{10, 10}};
-		int[] f = {1, 2, 3};
-		System.out.println(Arrays.toString(f));
-//		testNeuralNetworks(forms);
-		
-		
+		double alfa = 0.1;		
+		NeuralNetwork nn = new NeuralNetwork(nInputNodes, new Integer[]{25}, nOutputNodes, alfa); 
 	}
 	
-	private static void testNeuralNetworks(int[][] forms) {
+	private static void testNeuralNetworks(Integer[][] forms) {
 		int nInputNodes = 28 * 28;
 		int nOutputNodes = 10;
 		double alfa = 0.1;
 		NeuralNetwork nn;
-		int epochs = 10;
+		int epochs = 2;
 		double maxPerformance;
 		int bestEpoch;
 		double performance;
-		for(int[] hiddenLayers : forms) {
+		for(Integer[] hiddenLayers : forms) {
 			nn = new NeuralNetwork(nInputNodes, hiddenLayers, nOutputNodes, alfa);
 			maxPerformance = 0;
 			bestEpoch = 0;
 			for(int i = 1; i <= epochs; i++) {
-				train(nn);
+				train(nn, 1);
 				if ( (performance = test(nn)) > maxPerformance){
 					maxPerformance = performance;
 					bestEpoch = i;
@@ -122,20 +41,19 @@ public class NNTrainer {
 			}
 			System.out.println(Arrays.toString(hiddenLayers) + ": " + maxPerformance + "%, " + bestEpoch + ". Epoch");
 		}
-		
 	}
 	
 	static MNISTLoader trainLoader = new MNISTLoader();
 	static MNISTLoader testLoader = new MNISTLoader();
-	private static void loadData() {
+	private static void loadData(int nTrainingImages, int nTestImages) {
 		String trainFileName = "mnist/mnist_train.csv";
-		int nTrainImages = 1000; // Max 60000
+		int nTrainImages = Math.min(nTrainingImages, 60000); // Max 60000
 		trainLoader.loadCSV(trainFileName, nTrainImages);
 		trainLoader.initNormalizedInputs();
 		trainLoader.initTargets();		
 		
 		String testFileName = "mnist/mnist_test.csv";
-		int nTestImages = 500; // Max 10000
+		nTestImages = Math.min(nTestImages, 10000); // Max 10000
 		testLoader.loadCSV(testFileName, nTestImages);
 		testLoader.initNormalizedInputs();
 		testLoader.initTargets();
@@ -143,16 +61,18 @@ public class NNTrainer {
 	
 	}
 	
-	private static void train(NeuralNetwork nn) {
+	private static void train(NeuralNetwork nn, int epochs) {
 		List<DoubleMatrix2D> inputs = trainLoader.getNormalizedInputs();
 		List<DoubleMatrix2D> targets = trainLoader.getTargets();
-		for(int i = 1; i < inputs.size(); i++) {
-			nn.train2(inputs.get(i), targets.get(i));
-			if(i % 5000 == 0 && i != 0) {
-				System.out.println("Images Trained: " +  i + "/" + inputs.size());
-			}
+		for(int epoch = 1; epoch <= epochs; epoch++) {
+			for(int i = 1; i < inputs.size(); i++) {
+				nn.train(inputs.get(i), targets.get(i));
+				if(i % 5000 == 0 && i != 0) {
+					System.out.println("Images Trained: " +  i + "/" + inputs.size());
+				}
+			}			
+			System.out.println("Trained for " + epoch + " Epochs.");
 		}
-		
 	}
 	
 	private static int maxIndex(DoubleMatrix2D m) {
@@ -172,7 +92,7 @@ public class NNTrainer {
 		List<DoubleMatrix2D> targets = testLoader.getTargets();
 		double correct = 0;
 		for(int i = 0; i < inputs.size(); i++) {
-			int guess = maxIndex( nn.feedForward2(inputs.get(i)) );
+			int guess = maxIndex( nn.feedForward(inputs.get(i)) );
 			int target = maxIndex( targets.get(i) );
 			if(guess == target) {
 				correct ++;

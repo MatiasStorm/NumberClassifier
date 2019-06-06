@@ -52,7 +52,8 @@ public class MNISTLoader {
 		for(List<Double> row: data) {
 			matrix = new DenseDoubleMatrix2D(28 * 28, 1);
 			for(int i = 1; i < row.size(); i++) {
-				matrix.set(i-1, 0, row.get(i) / 255.0);
+//				matrix.set(i-1, 0, row.get(i) / 255.0);
+				matrix.set(i-1, 0, row.get(i) > 75 ? 1 : 0);
 			}
 			normalizedInputs.add(matrix.copy());
 		}

@@ -8,10 +8,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
+import cern.colt.matrix.impl.DenseDoubleMatrix2D;;
 
 public class MNISTLoader {
-	
 	private List<List<Double>> data = new ArrayList<>();
 	public List<List<Double>> loadCSV(String fileName, int numberOfImages) {
 		if (data.size() > 0) data = new ArrayList<>();			
@@ -36,7 +35,7 @@ public class MNISTLoader {
 		List<DoubleMatrix2D> inputs = new ArrayList<>();
 		DoubleMatrix2D matrix;
 		for(List<Double> row: data) {
-			matrix = new DenseDoubleMatrix2D(28 * 28, 1);
+			matrix = new DenseDoubleMatrix2D(MNIST.nPixels, 1);
 			for(int i = 1; i < row.size(); i++) {
 				matrix.set(i-1, 0, row.get(i));
 			}
@@ -50,9 +49,8 @@ public class MNISTLoader {
 		normalizedInputs = new ArrayList<>();
 		DoubleMatrix2D matrix;
 		for(List<Double> row: data) {
-			matrix = new DenseDoubleMatrix2D(28 * 28, 1);
+			matrix = new DenseDoubleMatrix2D(MNIST.nPixels, 1);
 			for(int i = 1; i < row.size(); i++) {
-//				matrix.set(i-1, 0, row.get(i) / 255.0);
 				matrix.set(i-1, 0, row.get(i) > 75 ? 1 : 0);
 			}
 			normalizedInputs.add(matrix.copy());
@@ -64,7 +62,7 @@ public class MNISTLoader {
 		targets = new ArrayList<>();
 		DoubleMatrix2D matrix;
 		for(List<Double> row : data) {
-			matrix = new DenseDoubleMatrix2D(10, 1);
+			matrix = new DenseDoubleMatrix2D(MNIST.nLabels, 1);
 			matrix.set(row.get(0).intValue(), 0, 1);
 			targets.add(matrix);
 		}
@@ -83,11 +81,4 @@ public class MNISTLoader {
 	}
 	
 }
-
-
-
-
-
-
-
 

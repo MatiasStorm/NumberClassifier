@@ -1,23 +1,26 @@
 package mnist;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import neuralnetwork.NeuralNetwork;
 import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.jet.math.Functions;
+import neuralnetwork.NeuralNetwork;
 
 public class NNTrainer {
-	static NeuralNetwork nn;
-	public static void main(String[] args) {
-		loadData(5000, 1000);
-		int nInputNodes = 28 * 28;
-		int nOutputNodes = 10;
-		double alfa = 0.1;		
-		NeuralNetwork nn = new NeuralNetwork(nInputNodes, new Integer[]{25}, nOutputNodes, alfa); 
-	}
+	/*
+	 *  Code used to create the weights and biases used in the application.
+	 */
+//	static NeuralNetwork nn;
+//	public static void main(String[] args) {
+//		loadData(60000, 10000);
+//		int nInputNodes = 28 * 28;
+//		int nOutputNodes = 10;
+//		double alfa = 0.1;		
+//		NeuralNetwork nn = new NeuralNetwork(nInputNodes, new Integer[]{240}, nOutputNodes, alfa); 
+//		train(nn, 10);
+//		System.out.println(test(nn));
+//		nn.saveData("NNweights_mnist_240.txt");
+//	}
 	
 	private static void testNeuralNetworks(Integer[][] forms) {
 		int nInputNodes = 28 * 28;
@@ -68,10 +71,9 @@ public class NNTrainer {
 			for(int i = 1; i < inputs.size(); i++) {
 				nn.train(inputs.get(i), targets.get(i));
 				if(i % 5000 == 0 && i != 0) {
-					System.out.println("Images Trained: " +  i + "/" + inputs.size());
+					System.out.println("Images Trained: " +  i + "/" + inputs.size() + " - Epoch: " + epoch);
 				}
-			}			
-			System.out.println("Trained for " + epoch + " Epochs.");
+			}
 		}
 	}
 	
@@ -101,11 +103,5 @@ public class NNTrainer {
 		return (correct / targets.size() * 100.0);
 	}
 }
-
-
-
-
-
-
 
 

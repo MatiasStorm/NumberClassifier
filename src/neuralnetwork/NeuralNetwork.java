@@ -1,6 +1,5 @@
 package neuralnetwork;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -14,7 +13,6 @@ import cern.colt.matrix.DoubleFactory2D;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
 import cern.jet.math.Functions;
-import cern.jet.random.Uniform;
 import cern.jet.random.engine.DRand;
 
 public class NeuralNetwork {
@@ -182,7 +180,6 @@ public class NeuralNetwork {
 			guess.assign(hiddenBiases.get(i), Functions.plus);
 			guess.assign(activate);
 		}
-		
 		guess = algebra.mult(outputWeights, guess);
 		guess.assign(outputBias, Functions.plus);
 		guess.assign(activate);	
@@ -206,7 +203,7 @@ public class NeuralNetwork {
 		outputGuess.assign(activate);
 		
 		
-		///// Back propagation: /////
+		// Back propagation:
 		DoubleMatrix2D outputError = target.copy();
 		outputError.assign(outputGuess, Functions.minus);
 		
@@ -219,54 +216,22 @@ public class NeuralNetwork {
 		outputWeights.assign(dWeightsOutput, Functions.plus); // update output weights
 		
 		// Hidden layers:
-		DoubleMatrix2D hiddenError, preInput, dBias, dWeights, nextWeights;
+		DoubleMatrix2D hiddenError, hiddenInput, dBias, dWeights, nextWeights;
 		for(int i = nHiddenLayers - 1; i >= 0; i--) {
 			nextWeights = i == hiddenGuesses.size() - 1 ? outputWeights : hiddenWeights.get(i + 1); // The weights of the layer after the current layer.
-			hiddenError = algebra.mult(algebra.transpose(nextWeights).copy(), outputError); // The error of the layer, output error is the error of the output.
-			
-			outputError = hiddenError.copy(); // Updating the outputError, so it is ready for the next iteration.
-			preInput = i == 0 ? input.copy() : hiddenGuesses.get(i-1); // The input to the current layer
+			hiddenError = algebra.mult(algebra.transpose(nextWeights).copy(), outputError); // The error of the layer.
+
+			hiddenInput = i == 0 ? input.copy() : hiddenGuesses.get(i-1); // The input to the current layer
 			
 			dBias = (hiddenGuesses.get(i)).copy();
 			dBias = dBias.assign(dActivate); // Differentiating the Output.
-			dBias.assign(hiddenError, Functions.mult); // Multiplying the error with the guess made by the layer
-			dBias.assign(Functions.mult(alfa)); // Multiplying with the learning rate
-			(hiddenBiases.get(i)).assign(dBias, Functions.plus); // Update hidden Bias
-			dWeights = algebra.mult(dBias, algebra.transpose(preInput.copy())); // Multiplying dBias with the input to the get gradient of the weights of the layer.
+			dBias.assign(hiddenError, Functions.mult); // Multiplying the error with the guess made by the layer.
+			dBias.assign(Functions.mult(alfa)); // Multiplying with the learning rate.
+			(hiddenBiases.get(i)).assign(dBias, Functions.plus); // Update hidden Bias.
+			dWeights = algebra.mult(dBias, algebra.transpose(hiddenInput.copy())); // Multiplying dBias with the input to the get gradient of the weights.
 			(hiddenWeights.get(i)).assign(dWeights, Functions.plus); // Update hidden weights							
+			
+			outputError = hiddenError.copy(); // Updating the outputError, so it is ready for the next iteration.
 		}	
 	}
-	
-	
-	public void trainBatch(DoubleMatrix2D[] inputs, DoubleMatrix2D[] targets, int batchSize) {
-		
-		
-	}
-	
-	
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

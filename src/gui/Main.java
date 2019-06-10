@@ -1,7 +1,6 @@
 package gui;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.List;
 
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
@@ -9,18 +8,13 @@ import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.image.PixelReader;
-import javafx.scene.image.PixelWriter;
-import javafx.scene.image.WritableImage;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -28,23 +22,20 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.scene.transform.Transform;
 import javafx.stage.Stage;
-import mnist.MNISTLoader;
+import mnist.MNIST;
 import neuralnetwork.NeuralNetwork;
-
 
 public class Main extends Application{
 	private int width = 600;
 	private int height = 300;
-	private int imgSize = 28;
 	private Canvas canvas;
 	private GraphicsContext gc;
 	BorderPane rootPane = new BorderPane();
 	NeuralNetwork nn;
 	public void start(Stage primaryStage) {
-		String weightsFile = "data/NNweights_mnist_210_210.txt";
+		String weightsFile = "NNweights_mnist_240.txt";
 		
 		nn = new NeuralNetwork(weightsFile, 0.1);
 		
@@ -113,16 +104,14 @@ public class Main extends Application{
 				percentagePane.add(percentagesText.get(i), 3, i - 5);
 			}
 		}
-
 		infoPane.setTop(textPane);
 		infoPane.setBottom(percentagePane);
-		
 		
 		return infoPane;
 	}
 	
 	private void initCanvas() {
-		canvas = new Canvas(imgSize * 10, imgSize * 10);
+		canvas = new Canvas(MNIST.imageWidth * 10, MNIST.imageHeight * 10);
 		gc = canvas.getGraphicsContext2D();
 		gc.setStroke(Color.BLACK);
 		gc.setFill(Color.WHITE);
@@ -165,7 +154,6 @@ public class Main extends Application{
 			}
 		}
 		guessText.setText(Integer.toString(maxIndex));
-		
 	}
 	
 	private DoubleMatrix2D convertCanvasToMatrix() {
@@ -174,7 +162,7 @@ public class Main extends Application{
 		Image img = canvas.snapshot(sp, null);
 		PixelReader pr = img.getPixelReader();
 		
-		DoubleMatrix2D matrix = new DenseDoubleMatrix2D(imgSize * imgSize, 1);
+		DoubleMatrix2D matrix = new DenseDoubleMatrix2D(MNIST.nPixels, 1);
 		int row = 0;
 		for(int y = 0; y < img.getHeight(); y++) {
 			for(int x = 0; x < img.getWidth(); x++) {
@@ -186,9 +174,3 @@ public class Main extends Application{
 		return matrix;
 	}
 }
-
-
-
-
-
-

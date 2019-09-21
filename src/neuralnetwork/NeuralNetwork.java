@@ -37,6 +37,13 @@ public class NeuralNetwork {
 	List<Integer> hiddenLayers;
 	private static final Algebra algebra = new Algebra();
 	private double alfa;
+	/**
+	 * Creates an instance of the neural network.
+	 * @param _nInputNodes  - Number of input nodes
+	 * @param _hiddenLayers - Array of hidden layers where each number represents the number of nodes in the layer.
+	 * @param _nOutputNodes - Number of output nodes
+	 * @param _alfa         - The learning rate.
+	 */
 	public NeuralNetwork(int _nInputNodes, Integer[] _hiddenLayers, int _nOutputNodes, double _alfa) {
 		alfa = _alfa;
 		nInputNodes = _nInputNodes;
@@ -67,7 +74,11 @@ public class NeuralNetwork {
 		outputBias.assign(random);
 	}
 	
-	
+	/**
+	 * Creates a neural network from the supplied data file.
+	 * @param fileName - Path to the file.
+	 * @param _alfa	   - Learning rate.
+	 */
 	public NeuralNetwork(String fileName, double _alfa) {
 		try {
 			alfa = _alfa;
@@ -95,7 +106,9 @@ public class NeuralNetwork {
 		}
 	}
 	
-	
+	/**
+	 * Initializes the weights and bias matrixes.
+	 */
 	private void initializeMatrixes() {		
 		DoubleMatrix2D weights, bias;
 		for(int i = 0; i < nHiddenLayers; i++) {
@@ -115,38 +128,11 @@ public class NeuralNetwork {
 		outputBias = factory.make(nOutputNodes, 1);
 	}
 	
-	
-	private void readMatrixFromFile(DoubleMatrix2D matrix, BufferedReader reader) {
-		String line;
-		try {
-			if((line = reader.readLine()) != null) {
-				ArrayList<String> stringData = new ArrayList<>(Arrays.asList(line.split(" ")));
-				int rows = Integer.parseInt(stringData.remove(0));
-				int columns = Integer.parseInt(stringData.remove(0));
-				for(int i = 0; i < stringData.size(); i++) {
-					int r = Math.floorDiv(i, columns);
-					int c = i % columns;
-					matrix.set(r, c, Double.parseDouble(stringData.get(i)));
-				}
-				
-			}
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}
-
-	
-	private void writeMatrixToFile(DoubleMatrix2D matrix, PrintWriter writer) {
-		writer.print(matrix.rows() + " " + matrix.columns() + " ");
-		for(int r = 0; r < matrix.rows(); r++) {
-			for (int c = 0; c < matrix.columns(); c++) {
-				writer.print(matrix.get(r, c) + " ");
-			}
-		}
-		writer.println();
-	}
-	
-	
+	/**
+	 * Saves the neural network to the supplied file path
+	 * 
+	 * @param fileName - Path to the file where the neural network data should be saved.
+	 */
 	public void saveData(String fileName) {
 		try {
 			PrintWriter writer = new PrintWriter(fileName);
@@ -171,7 +157,54 @@ public class NeuralNetwork {
 		}
 	}
 	
+	/**
+	 * Reads a matrix from a file using the supplied BufferedReader.
+	 * @param matrix - The matrix where the data from the BufferedReder should be entered into.
+	 * @param reader - A BufferedReader initialized with the neural network data file.
+	 */
+	private void readMatrixFromFile(DoubleMatrix2D matrix, BufferedReader reader) {
+		String line;
+		try {
+			if((line = reader.readLine()) != null) {
+				ArrayList<String> stringData = new ArrayList<>(Arrays.asList(line.split(" ")));
+				int rows = Integer.parseInt(stringData.remove(0));
+				int columns = Integer.parseInt(stringData.remove(0));
+				for(int i = 0; i < stringData.size(); i++) {
+					int r = Math.floorDiv(i, columns);
+					int c = i % columns;
+					matrix.set(r, c, Double.parseDouble(stringData.get(i)));
+				}
+				
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Writes a given matrix to a file using the supplied PrintWriter
+	 * 
+	 * @param matrix - The matrix which should be written to a file.
+	 * @param writer - The PrintWriter, initialized with the data file, which is used to write the matrix to the file.
+	 */
+	private void writeMatrixToFile(DoubleMatrix2D matrix, PrintWriter writer) {
+		writer.print(matrix.rows() + " " + matrix.columns() + " ");
+		for(int r = 0; r < matrix.rows(); r++) {
+			for (int c = 0; c < matrix.columns(); c++) {
+				writer.print(matrix.get(r, c) + " ");
+			}
+		}
+		writer.println();
+	}
 	
+	
+	/**
+	 * Feeds the input through a neural network and creates a DoubleMatrix2D called guess which
+	 * contains the likely-hood for the input being a member of each of the target labels.
+	 * 
+	 * @param  input - A DoubleMatrix2D
+	 * @return guess - A DoubleMatrix2D containing the likely-hood distribution.
+	 */
 	public DoubleMatrix2D feedForward(DoubleMatrix2D input) {
 		DoubleMatrix2D guess = input.copy();
 		
@@ -186,9 +219,14 @@ public class NeuralNetwork {
 		return guess;
 	}
 	
-	
+	/**
+	 * Trains the neural network by first making a prediction and then back propagating to correct the weights and biases.
+	 * 
+	 * @param input  - The input to train the neural network on.
+	 * @param target - The correct prediction.
+	 */
 	public void train(DoubleMatrix2D input, DoubleMatrix2D target) {
-		// Feed forward:
+/* ==================== Feed forward: ============================== */
 		DoubleMatrix2D hiddenGuess = input.copy();
 		List<DoubleMatrix2D> hiddenGuesses = new ArrayList<>();
 		
@@ -202,8 +240,8 @@ public class NeuralNetwork {
 		outputGuess.assign(outputBias, Functions.plus);
 		outputGuess.assign(activate);
 		
-		
-		// Back propagation:
+
+/* ==================== Back propagation: ============================ */
 		DoubleMatrix2D outputError = target.copy();
 		outputError.assign(outputGuess, Functions.minus);
 		

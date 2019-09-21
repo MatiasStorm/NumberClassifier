@@ -50,6 +50,11 @@ public class Main extends Application{
 		primaryStage.setResizable(false);
 	}
 	
+	/**
+	 * Initializes the canvas, adds it the a pane and returns the pane
+	 * 
+	 * @return canvasPane, instance of a pane containing a canvas
+	 */
 	private Pane addCanvasPane() {
 		initCanvas();
 		Pane canvasPane = new Pane();
@@ -58,58 +63,11 @@ public class Main extends Application{
 		return canvasPane;
 	}
 	
-	private Pane addControlPane() {
-		BorderPane controlPane = new BorderPane();
-		HBox buttonPane = new HBox();
-		buttonPane.setPadding(new Insets(10, 10, 10, 10));
-		buttonPane.setSpacing(130);
-		buttonPane.setAlignment(Pos.TOP_LEFT);
-		
-		Button clearButton = new Button("Clear");
-		Button guessButton = new Button("Guess");
-		buttonPane.getChildren().addAll(clearButton, guessButton);
-		
-		clearButton.setOnMouseClicked(e -> clearCanvas());
-		guessButton.setOnMouseClicked(e -> makeGuess());
-		
-		controlPane.setBottom(buttonPane);
-		controlPane.setCenter(addInfoPane());
-		
-		return controlPane;
-	}
-	
-	Text guessText;
-	ArrayList<Text> percentagesText = new ArrayList<>();
-	private Pane addInfoPane() {
-		BorderPane infoPane = new BorderPane();
-		GridPane textPane = new GridPane();
-		textPane.setHgap(15);
-		textPane.setVgap(12);
-		textPane.add(new Text("The Number Is: "), 0,0);
-		guessText = new Text("  ");
-		guessText.getStyleClass().add("guess-text");
-		textPane.add(guessText, 1,0);
-		textPane.add(new Text("Distribution:"), 0, 1, 2, 1);
-		
-		GridPane percentagePane = new GridPane();
-		percentagePane.setHgap(30);
-		for(int i = 0; i < 10; i++) {
-			percentagesText.add(new Text("0.00%"));
-			percentagesText.get(i).getStyleClass().add("percentage-text");
-			if (i < 5) {
-				percentagePane.add(new Text(i + ":"), 0, i);
-				percentagePane.add(percentagesText.get(i), 1, i);
-			} else {
-				percentagePane.add(new Text(i + ":"), 2, i - 5);
-				percentagePane.add(percentagesText.get(i), 3, i - 5);
-			}
-		}
-		infoPane.setTop(textPane);
-		infoPane.setBottom(percentagePane);
-		
-		return infoPane;
-	}
-	
+	/**
+	 * Initializes the canvas, which is 10x larger than the MNIST images.
+	 * 
+	 * @return 
+	 */
 	private void initCanvas() {
 		canvas = new Canvas(MNIST.imageWidth * 10, MNIST.imageHeight * 10);
 		gc = canvas.getGraphicsContext2D();
@@ -136,10 +94,103 @@ public class Main extends Application{
 		});
 	}
 	
+	/**
+	 * Creates the control panel, and initializes the buttons with in it.
+	 * 
+	 * @return contorlPanel, instance of a panel containing a clear and a guess button. 
+	 */
+	private Pane addControlPane() {
+		BorderPane controlPane = new BorderPane();
+		HBox buttonPane = new HBox();
+		buttonPane.setPadding(new Insets(10, 10, 10, 10));
+		buttonPane.setSpacing(130);
+		buttonPane.setAlignment(Pos.TOP_LEFT);
+		
+		Button clearButton = new Button("Clear");
+		Button guessButton = new Button("Guess");
+		buttonPane.getChildren().addAll(clearButton, guessButton);
+		
+		clearButton.setOnMouseClicked(e -> clearCanvas());
+		guessButton.setOnMouseClicked(e -> makeGuess());
+		
+		controlPane.setBottom(buttonPane);
+		controlPane.setCenter(addInfoPane());
+		
+		return controlPane;
+	}
+	
+	
+	
+	/**
+	 * Creats an info pane containing the text pane and the percentages pane
+	 * 
+	 * @return infoPane, instance of a border pane containing the text and percentage pane.
+	 */
+	private Pane addInfoPane() {
+		BorderPane infoPane = new BorderPane();
+		
+		Pane textPane = getTextPane();
+		Pane percentagePane = getPercentagePane();
+		infoPane.setTop(textPane);
+		infoPane.setBottom(percentagePane);
+		
+		return infoPane;
+	}
+	
+	Text guessNumber;
+	/**
+	 * Setting up a text pane containing the guessed number
+	 * 
+	 * @return textPane, instance of a GridPane.
+	 */
+	private Pane getTextPane() {
+		GridPane textPane = new GridPane();
+		textPane.setHgap(15);
+		textPane.setVgap(12);
+		textPane.add(new Text("The Number Is: "), 0,0);
+		guessNumber = new Text("  ");
+		guessNumber.getStyleClass().add("guess-text");
+		textPane.add(guessNumber, 1,0);
+		return textPane;
+	}
+	
+	ArrayList<Text> percentages = new ArrayList<>();
+	/**
+	 * Creates a GridPane containing the likely hood for the drawn number to be a number from 0 to 9, in percentages.
+	 * 
+	 * @return percentagePane, instance of a GridPane.
+	 */
+	private Pane getPercentagePane() {
+		GridPane percentagePane = new GridPane();
+		percentagePane.setHgap(30);
+		percentagePane.add(new Text("Distribution"), 0, 0);
+		for(int i = 1; i < 11; i++) {
+			int index = i - 1;
+			percentages.add(new Text("0.00%"));
+			percentages.get(index).getStyleClass().add("percentage-text");
+			if (i < 6) {
+				percentagePane.add(new Text(i + ":"), 0, i);
+				percentagePane.add(percentages.get(index), 1, i);
+			} else {
+				percentagePane.add(new Text(i + ":"), 2, i - 5);
+				percentagePane.add(percentages.get(index), 3, i - 5);
+			}
+		}
+		return percentagePane;
+	}
+
+	
+	/**
+	 * Clear all drawings on the canvas.
+	 */
 	private void clearCanvas() {
 		gc.fillRect(0, 0, canvas.getWidth(), canvas.getHeight());
 	}
 	
+	/**
+	 * Calls the neural network to make a guess on what number the drawing represents and
+	 * updates the gessNumber variable to display the guessed number in the infoPane.
+	 */
 	private void makeGuess() {
 		DoubleMatrix2D input = convertCanvasToMatrix();
 		DoubleMatrix2D guess = nn.feedForward(input);
@@ -147,15 +198,21 @@ public class Main extends Application{
 		int maxIndex = -1;
 		for(int i = 0; i < guess.rows(); i++) {
 			DecimalFormat df = new DecimalFormat("##.##");
-			percentagesText.get(i).setText( df.format(guess.get(i, 0)/guess.zSum() * 100) + "%");
+			percentages.get(i).setText( df.format(guess.get(i, 0)/guess.zSum() * 100) + "%");
 			if(guess.get(i, 0) > max) {
 				max = guess.get(i, 0);
 				maxIndex = i;
 			}
 		}
-		guessText.setText(Integer.toString(maxIndex));
+		guessNumber.setText(Integer.toString(maxIndex));
 	}
 	
+	/**
+	 * Converts the canvas to a 28x28 matrix, which can be analyzed by the neural network.
+	 * The matrix contains numbers between 0-1 which represents the pixel colors, white = 0, black = 1.
+	 * 
+	 * @return matrix, 28x28 matrix representation of the canvas where pixel colors are converted into a number between 0 and 1.
+	 */
 	private DoubleMatrix2D convertCanvasToMatrix() {
 		SnapshotParameters sp = new SnapshotParameters();
 		sp.setTransform(Transform.scale(0.1, 0.1));
